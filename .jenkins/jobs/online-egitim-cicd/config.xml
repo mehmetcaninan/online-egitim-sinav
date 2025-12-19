@@ -1,0 +1,136 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <description>Online Eğitim Sınav Sistemi CI/CD Pipeline Job</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>30</daysToKeep>
+        <numToKeep>50</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.13">
+      <gitLabConnection></gitLabConnection>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.8.3">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/your-username/online-egitim-sinav-kod.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/main</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="empty-list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H/5 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition plugin="workflow-cps@2.92">
+      <script>
+        pipeline {
+            agent any
+
+            environment {
+                MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
+                DOCKER_IMAGE = 'online-egitim-sinav'
+                DOCKER_TAG = "${BUILD_NUMBER}"
+            }
+
+            stages {
+                stage('Checkout') {
+                    steps {
+                        checkout scm
+                    }
+                }
+
+                stage('Build') {
+                    steps {
+                        sh './mvnw clean compile'
+                    }
+                }
+
+                stage('Unit Tests') {
+                    steps {
+                        sh './mvnw test'
+                    }
+                    post {
+                        always {
+                            junit 'target/surefire-reports/*.xml'
+                        }
+                    }
+                }
+
+                stage('Integration Tests') {
+                    steps {
+                        sh './mvnw verify'
+                    }
+                    post {
+                        always {
+                            junit 'target/failsafe-reports/*.xml'
+                        }
+                    }
+                }
+
+                stage('Docker Build & Run') {
+                    steps {
+                        sh './mvnw spring-boot:build-image'
+                        sh 'docker run -d --name online-egitim-test -p 8080:8080 online-egitim-sinav:${DOCKER_TAG}'
+                        sh 'sleep 30'
+                    }
+                }
+
+                stage('Selenium Tests') {
+                    parallel {
+                        stage('Login Test') {
+                            steps {
+                                sh 'mvn test -Dtest=UserLoginSeleniumTest'
+                            }
+                        }
+                        stage('Exam Creation Test') {
+                            steps {
+                                sh 'mvn test -Dtest=ExamCreationSeleniumTest'
+                            }
+                        }
+                        stage('Exam Taking Test') {
+                            steps {
+                                sh 'mvn test -Dtest=ExamTakingSeleniumTest'
+                            }
+                        }
+                    }
+                }
+            }
+
+            post {
+                always {
+                    sh 'docker stop online-egitim-test || true'
+                    sh 'docker rm online-egitim-test || true'
+                    publishTestResults testResultsPattern: 'target/**/*.xml'
+                }
+            }
+        }
+      </script>
+      <sandbox>true</sandbox>
+    </org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
+

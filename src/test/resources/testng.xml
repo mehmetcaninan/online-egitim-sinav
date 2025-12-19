@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="SeleniumTestSuite" verbose="1">
+    <test name="LoginTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.UserLoginSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="ExamCreationTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.ExamCreationSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="ExamTakingTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.ExamTakingSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="ResultViewTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.ResultViewSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="UserProfileTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.UserProfileSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="AdminPanelTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.AdminPanelSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="QuestionManagementTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.QuestionManagementSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="ReportViewTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.ReportViewSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="FileUploadTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.FileUploadSeleniumTest"/>
+        </classes>
+    </test>
+
+    <test name="PerformanceTests">
+        <classes>
+            <class name="com.example.online_egitim_sinav_kod.selenium.PerformanceSeleniumTest"/>
+        </classes>
+    </test>
+</suite>
+
